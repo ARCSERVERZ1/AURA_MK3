@@ -1,0 +1,278 @@
+:root {
+    --arc_color: #FF5F1F;
+
+}
+
+
+body, html {
+  height: 100%;
+  display: flex;
+  flex-direction:column;
+  justify-content: center;
+  align-items: center;
+  background:black;
+}
+.promptbar{
+font-size:10px;
+}
+
+
+.concentric-circles {
+
+background:yellow;
+}
+
+.circle {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  border-radius : 50%;
+}
+
+.circle:nth-child(1) {
+  width: 100px;
+  height: 100px;
+  border: 20px solid black;
+
+}
+/* Diameter of outer circle */
+
+.circle:nth-child(2) {
+  width: 250px; /* Diameter of outer circle */
+  height: 250px;
+  border: 10px solid var(--arc_color);
+  border-left: 10px solid rgba(0,0,0,0);
+  border-right: 10px solid rgba(0,0,0,0);
+  transform: translate(-50%, -50%);
+}
+
+.processing {
+animation: 2s ease 0s infinite normal none running processing;
+}
+
+
+.loading_animation {
+ animation: 10s ease 0s infinite normal none running rotateDonut;
+}
+
+@keyframes rotateDonut {
+  0% {
+
+    transform: translate(-50%, -50%) rotate(0deg);
+}
+10% {
+
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+20% {
+   ;
+    transform: translate(-50%, -50%) rotate(-90deg);
+}
+40% {
+
+    transform: translate(-50%, -50%) rotate(180deg);
+}
+70% {
+
+    transform: translate(-50%, -50%) rotate(-180deg);
+}
+100% {
+
+    transform: translate(-50%, -50%) rotate(0deg);
+}
+}
+
+
+@keyframes processing {
+  0% {
+
+    transform: translate(-50%, -50%) rotate(0deg);
+}
+10% {
+
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+20% {
+    transform: translate(-50%, -50%) rotate(180deg);
+}
+
+70% {
+
+    transform: translate(-50%, -50%) rotate(360deg);
+}
+100% {
+
+    transform: translate(-50%, -50%) rotate(0deg);
+}
+}
+
+
+.circle:nth-child(3) {
+  width: 270px; /* Diameter of outer circle */
+  height: 270px;
+
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 75px var(--arc_color);
+
+}
+
+@keyframes breath {
+0% {
+    transform: translate(-50%, -50%) scale(1);
+}
+70% {
+    transform: translate(-50%, -50%) scale(0.9);
+}
+100% {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+}
+
+.circle:nth-child(4) {
+  width: 300px; /* Diameter of outer circle */
+  height: 300px;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 75px var(--arc_color);
+  animation: breath 3s infinite ease-in-out;
+}
+
+.voice-line{
+ position: absolute;
+  top: 30%;
+  left: 50%;
+  background:red;
+}
+
+.voice-line:nth-child(1) {
+  width: 10px;
+  height: 40px;
+  transform: translate(0%, -50%);
+  animation:updown 2s  ease-in-out;
+  }
+
+
+.voice-line:nth-child(2) {
+  width: 10px;
+  height: 40px;
+  transform: translate(-200%, -50%);
+  animation:updown 2s  ease-in-out;
+  }
+
+.voice-line:nth-child(3) {
+width: 10px;
+height: 40px;
+transform: translate(200%, -50%);
+animation:updown 2s  ease-in-out;
+}
+
+.voice-bar {
+
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:space-around;
+position: absolute;
+top: 65%;
+left: 50%;
+transform: translate(-50%, -50%);
+
+}
+
+.voice-bar input {
+border-radius:20px;
+width:300px;
+height:25px;
+
+}
+
+.app-drawer{
+/*display:flex;
+align-items:center;
+justify-content:space-around;
+height:50px;
+width:100%;
+margin-bottom:40px;*/
+
+margin-top:200px;
+display:flex;
+align-items:center;
+justify-content:space-around;
+height:70px;
+width:300px;
+padding:10px;
+margin-bottom:40px;
+display:flex;
+overflow-x:auto;
+overflow-y: hidden
+
+}
+.app-drawer button : HOVER{
+/*height:50px;
+width:70px;
+border-radius:10px;*/
+transform:scale(1.1);
+}
+
+.app-drawer button{
+/*height:50px;
+width:70px;
+border-radius:10px;*/
+color:skyblue;
+ background-color: Transparent;
+  background-repeat:no-repeat;
+  border: none;
+
+}
+/* Mobile Devices */
+@media only screen and (max-width: 768px) {
+ .app-drawer::-webkit-scrollbar{
+width:0;
+}
+}
+
+/* Laptop and Tablets */
+@media only screen and (min-width: 769px) and (max-width: 2400px) {
+
+.app-drawer::-webkit-scrollbar {
+  background-color: #404040; /* Dark gray color for the thumb */
+  border-radius: 5px; /* Rounded edges for the thumb */
+    height:1vh;
+}
+
+.app-drawer::-webkit-scrollbar-thumb {
+  background-color:#888
+; /* Dark gray color for the thumb */
+  border-radius: 100vh; /* Rounded edges for the thumb */
+
+}
+}
+
+
+
+#expandableText {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    font-size: 16px;
+    border-top-left-radius:10px;
+    border-bottom-left-radius:10px;
+    border-bottom-right-radius:10px;
+    background-color: black;
+    color : white;
+    height:auto;
+}
+
+#expandableText::-webkit-scrollbar{
+width:0px;
+}
+
+.prompt-button {
+display:flex;
+align-items:center;
+justify-content:space-around;
+height:20px;
+width:100%;
+margin-bottom:2px;
+color:white;
+}

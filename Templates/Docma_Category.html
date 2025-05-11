@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta  charset="UTF-8" name="viewport" content=" initial-scale= 0.6">
+    <title>Welcome Home!</title>
+    <link rel="stylesheet" href="{% static 'dem/docma_home_styles.css' %}">
+<!--    <link rel="stylesheet" href="{% static 'docma_static/doc_viewer_style.css' %}">-->
+
+</head>
+<body class="page">
+<div class="nav-bar">
+
+<div class = "homes">
+    <a href = '/home/'>Home/</a>
+    <a href = '/doc_manager/'>Document Category</a>
+</div>
+    <div class = "home-button">
+    <a href = 'add_doc/'>Add Document</a>
+    </div>
+</div>
+
+<div class="cards-holder">
+{% for i in doc_type %}
+<div class="doc-card">
+
+   <img class = 'di' src="  {% static 'fcons.png' %}" >
+    <a  href="doc_viewer/{{i}}/"> <h4 class="typetext"> {{i}} </h4> </a>
+
+</div>
+{% endfor %}
+    </div>
+</body>
+</html>
+
+<style>
+
+
+</style>

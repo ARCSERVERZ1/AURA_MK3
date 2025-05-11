@@ -1,0 +1,243 @@
+.page{
+background-color : #03161e;
+
+
+
+background-size: 1200px 800px;
+}
+.cards-holder{
+margin:25px;
+display:grid;
+ grid-template-columns: repeat(3, 1fr);
+}
+.page1{
+background-color : black;
+background-size: 1200px 800px;
+}
+.logo{
+padding :0px;
+margin : 0px;
+}
+
+.info{
+
+height:30px;
+background-color:grey;
+margin:0px;
+color:gold;
+display:flex;
+justify-content :left;
+align-items:center;
+border-radius:30px;
+#border:1px solid gold;
+
+
+}
+.imageholder{
+
+}
+
+.card{
+width : 110px;
+height : 130px;
+margin-top:30px;
+margin-left:30px;
+
+padding : 15px;
+background-color:#484848;
+border-radius: 20px;
+box-shadow : 0 0 30px 	#181818;
+border:1px solid gold;
+}
+.image{
+
+margin-top:15px
+
+}
+.image1{
+height:80px;
+margin-top:15px
+
+}
+.card:hover{
+transform : scale(1.03);
+box-shadow : 0 0 10px #ffffcc;
+}
+.text{
+
+color:	 #cccc00;
+}
+a {
+text-decoration : none;
+color:gold;
+}
+.set{
+display:flex;}
+
+.pics{
+background-color:grey;
+margin:15px;
+border-radius : 25px;
+#border:1px solid orange;
+box-shadow : 0 0 50px 	#181818;
+}
+
+.filter-bar  {
+background-color : #7393B3 ;
+border-radius: 10px;
+width : 380px;
+padding:5px;
+
+}
+
+.home{
+display:flex;
+background-color : #36454F;
+border-radius: 10px;
+justify-content :left;
+padding-left : 8px;
+}
+
+.home a {
+color : white;
+font-size:30px;
+}
+.filter-bar input , select , a {
+border-radius: 6px;
+padding:5px;
+margin-left: 10px;
+font-weight: bold ;
+}
+.filter-bar a{
+color:white;
+}
+
+
+.nav-bar{
+display:flex;
+background-color: #36454F;
+margin:10px;
+padding: 30px;
+border-radius: 10px;
+justify-content: space-between;
+padding-right:180px;
+margin-top:40px;
+}
+.view-block{
+background-color:grey;
+}
+.doc-pics{
+background-color:blue;
+}
+.doc-details{
+
+background-color:White;}
+
+
+.doc-card{
+margin-top:100px;
+width : 210px;
+height : 130px;
+color:white;
+
+
+}
+
+.di{
+width:300px;
+opacity:90%;
+}
+.doc-card a{
+
+color:white;
+}
+.typetext{
+position:relative;
+top:-130px;
+left:35px;
+color:white;
+font-size:23px;
+filter: drop-shadow(1px 1px 10px green);
+}
+
+.home-button {
+display:flex;
+align-items:center;
+justify-content:center;
+height : 10px;
+padding:10px;
+background-color : blue;
+border-radius: 7px;
+color:white;
+}
+
+@media (orientation: portrait) {
+.cards-holder{
+/*margin:25px;*/
+display:grid;
+grid-template-columns: repeat(2, 1fr);
+}
+
+.di{
+width:250px;
+opacity:90%;
+}
+.nav-bar{
+width:500px;
+position:fixed;
+top:-30px;
+display:flex;
+border-radius:5px;
+height:60px;
+justify-content: space-between;
+z-index: 1;
+/* From https://css.glass */
+
+background: rgba(0, 187, 255, 0.34);
+border-radius: 16px;
+box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+backdrop-filter: blur(14.7px);
+-webkit-backdrop-filter: blur(14.7px);
+border: 1px solid rgba(0, 187, 255, 0.93);
+font-size:10px;
+}
+
+.home-button {
+display:flex;
+align-items:center;
+justify-content:center;
+height : 10px;
+border-radius: 20px;
+color:white;
+/* From https://css.glass */
+background: rgba(0, 114, 255, 0.2);
+border-radius: 10px;
+box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+backdrop-filter: blur(5px);
+-webkit-backdrop-filter: blur(5px);
+border: 1px solid rgba(0, 114, 255, 0.3);
+}
+.home{
+display:flex;
+border-radius: 10px;
+justify-content :left;
+padding: 8px;
+/* From https://css.glass */
+background: rgba(74, 69, 5, 0.81);
+border-radius: 16px;
+box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+backdrop-filter: blur(5px);
+-webkit-backdrop-filter: blur(5px);
+border: 1px solid rgba(74, 69, 5, 0.3);
+font-size:6px;
+
+
+}
+.home a {
+color : white;
+font-size:20px;
+}
+}\
+
+
+
