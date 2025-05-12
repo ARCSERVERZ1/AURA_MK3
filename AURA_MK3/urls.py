@@ -25,7 +25,7 @@ urlpatterns = [
     path('' , v.login ),
     path('home/' , v.home_page ),
     path('homeautom/' , include('HOMEAUTOM.urls') ),
-    path('aigic/' , include('AIGIC.urls') ),
+    # path('aigic/' , include('AIGIC.urls') ),
     path('general/' , include('GENERAL_APPS.urls') ),
 
 
