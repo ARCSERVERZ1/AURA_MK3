@@ -137,8 +137,8 @@ def home_menu_req():
 
 def give_path():
     random_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(9))
-    if os.path.exists('AURA_MK2/cloud'):
-        upload_dir = 'AURA_MK2/buffer/'+random_code+'/'
+    if os.path.exists('AURA_MK3/cloud'):
+        upload_dir = 'AURA_MK3/buffer/'+random_code+'/'
         main_folder = 'AllDocuments/'
     else:
         upload_dir = 'assets/buffer/'+random_code+'/'
@@ -163,8 +163,8 @@ def doc_manager_save_firebase(request):
 
         local_dir , firebase_folder = give_path()
 
-        # if os.path.exists('AURA_MK2/assets/cloud'):
-        #     upload_dir = 'AURA_MK2/assets/buffer/'+random_code+'/'
+        # if os.path.exists('AURA_MK3/assets/cloud'):
+        #     upload_dir = 'AURA_MK3/assets/buffer/'+random_code+'/'
         #     main_folder = 'Docmanger/'
         # else:
         #     upload_dir = 'assets/buffer/'+random_code+'/'
