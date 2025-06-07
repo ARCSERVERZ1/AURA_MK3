@@ -34,3 +34,29 @@ class food_log(models.Model):
 
     def __str__(self):
         return str(self.id) + '-' + str(self.food_type) + '-' + str(self.date)
+
+
+class HealthIncidentLogs(models.Model):
+    id = models.IntegerField(primary_key=True)
+    user = models.CharField(max_length=200)
+    discomfort = models.CharField(max_length=200)
+    severity = models.CharField(max_length=200)
+    apprx_start_time = models.DateTimeField()
+    apprx_end_time = models.DateTimeField()
+    medication = models.CharField(max_length=200)
+    while_remarks = models.TextField()
+    after_remarks = models.TextField()
+    time_stamp = models.DateTimeField()
+    updated_by = models.CharField(max_length=200)
+
+    def __str__(self):
+        return str(self.id) + '-' + str(self.discomfort) + '-' + str(self.severity)
+
+
+class config_discomfort(models.Model):
+    id = models.IntegerField(primary_key=True)
+    discomfort_id = models.CharField(max_length=200)
+    discomfort = models.CharField(max_length=200)
+
+    def __str__(self):
+        return str(self.id) + '-' + str(self.discomfort_id) + '-' + str(self.discomfort)

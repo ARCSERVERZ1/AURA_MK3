@@ -21,7 +21,7 @@ class transactions_data(models.Model):
     xtra = models.CharField(max_length=255, default='NA')
 
     def __str__(self):
-        return f"{self.date}-{self.user} - {self.amount} - {self.category}"
+        return f"{self.date}-{self.user} - {self.amount} - {self.category} - {self.xtra}"
 
 
 class groupdata(models.Model):

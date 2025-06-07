@@ -6,3 +6,5 @@ from .models import *
 
 admin.register(medtrac_log)(admin.ModelAdmin)
 admin.register(food_log)(admin.ModelAdmin)
+admin.register(config_discomfort)(admin.ModelAdmin)
+admin.register(HealthIncidentLogs)(admin.ModelAdmin)

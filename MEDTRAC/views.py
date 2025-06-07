@@ -5,9 +5,66 @@ from django.db.models import Sum
 import pytz
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+
+
+def get_users(requests):
+    lastname = requests.user.last_name
+    users = User.objects.all()
+    user_list = [str(requests.user.first_name).capitalize()]
+    for user in users:
+        if str(user.last_name).strip().lower() == str(
+                lastname).strip().lower() and requests.user.first_name != user.first_name:
+            user_list.append(str(user.first_name).capitalize())
+    return user_list
+
 
 def medtrac_dashboard(requests):
-    return render(requests, 'Medtrac_AddFoodLog.html')
+    card_data = list(HealthIncidentLogs.objects.values())
+    all_records = {}
+    discomfort = list(config_discomfort.objects.values())
+    for record in card_data:
+            if record['user'] in all_records:
+                all_records[record['user']].append(record)
+            else:
+                all_records[record['user']] = [record]
+
+
+    res = {
+        'users': get_users(requests),
+        'discomforts' :discomfort ,
+        'all_records' : all_records
+    }
+
+    return render(requests, 'Medtrac_IT.html', context=res)
+
+
+def add_health_incident(request):
+    print(request.POST['Discomfort'])
+    print(request.POST['Severity'])
+    print(request.POST['Medication'])
+    print(request.POST['Remarks'])
+    print(request.POST['start_time'])
+    print(request.POST['end_time'], "|")
+    print(request.POST['After_Remarks'])
+
+    HIL = HealthIncidentLogs(
+        user=request.POST['Person'],
+        discomfort=request.POST['Discomfort'],
+        severity=request.POST['Severity'],
+        apprx_start_time=request.POST['start_time'],
+        apprx_end_time=request.POST['end_time'] if request.POST['end_time'] != "" else request.POST['start_time'],
+        medication=request.POST['Medication'],
+        while_remarks=request.POST['Remarks'],
+        after_remarks=request.POST['After_Remarks'],
+        time_stamp=datetime.now(pytz.timezone('Asia/Kolkata')),
+        updated_by=request.user
+    )
+    HIL.save()
+    res = {
+        'users': get_users(request)
+    }
+    return render(request, 'Medtrac_IT.html', context=res)
 
 
 def log_medtrac(requests):
@@ -34,6 +91,7 @@ def log_medtrac(requests):
 
     return render(requests, 'Medtrac_AddFoodLog.html')
 
+
 @login_required()
 def food_logger(request):
     if request.method == 'POST':
@@ -55,18 +113,16 @@ def food_logger(request):
         def clean_data(data):
             return str(data).split(':')[1].strip()
 
-
-
         data = food_log(
-            user = user,
-            food_type = food_type,
-            food_qty = clean_data(food_qty),
-            junk_rating = clean_data(junk_rating),
-            satisfaction_level = clean_data(satisfaction_level),
-            food_description = food_desc,
-            date = date,
-            time_stamp = time_stamp,
-            updated_by  = ''
+            user=user,
+            food_type=food_type,
+            food_qty=clean_data(food_qty),
+            junk_rating=clean_data(junk_rating),
+            satisfaction_level=clean_data(satisfaction_level),
+            food_description=food_desc,
+            date=date,
+            time_stamp=time_stamp,
+            updated_by=''
         )
 
         data.save()
