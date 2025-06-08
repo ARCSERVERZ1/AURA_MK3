@@ -6,8 +6,9 @@ import pytz
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-
-
+from django.shortcuts import redirect
+from rest_framework.decorators import api_view, permission_classes
+from django.http import JsonResponse
 def get_users(requests):
     lastname = requests.user.last_name
     users = User.objects.all()
@@ -61,11 +62,50 @@ def add_health_incident(request):
         updated_by=request.user
     )
     HIL.save()
-    res = {
-        'users': get_users(request)
-    }
-    return render(request, 'Medtrac_IT.html', context=res)
 
+    return redirect('Medtrac_home')
+
+
+@api_view(['POST'])
+def delete_data_by_id(request):
+    try:
+        print(request.data)
+        HealthIncidentLogs.objects.filter(id=request.data['id']).delete()
+        return JsonResponse({'Result': 'Data Deleted'}, safe=False)
+    except:
+        return JsonResponse({'Result': 'Exception while Deleting data'}, safe=False)
+
+
+@api_view( ['POST'])
+def get_data_by_id(requests):
+    print( requests.data)
+    data = list(HealthIncidentLogs.objects.filter( id = requests.data['id']).values())
+    print(data[0]['apprx_start_time'])
+    return JsonResponse({'Result':data} , safe = False)
+
+
+@api_view(['POST'])
+def update_data_by_id(request):
+    try:
+        print( request.data)
+
+        record_data = HealthIncidentLogs.objects.filter( id = request.data['id'])
+
+        record_data.update(
+            user=request.data['Person'],
+            discomfort=request.data['Discomfort'],
+            severity=request.data['Severity'],
+            apprx_start_time=request.data['start_time'],
+            apprx_end_time=request.data['end_time'] if request.data['end_time'] != "" else request.data['start_time'],
+            medication=request.data['Medication'],
+            while_remarks=request.data['Remarks'],
+            after_remarks=request.data['After_Remarks'],
+            updated_by=request.user
+        )
+
+        return JsonResponse({'Result': 'Data Updated'}, safe=False)
+    except Exception as e:
+        return JsonResponse({'Result': f'Error {e}'}, safe=False)
 
 def log_medtrac(requests):
     print(f"medtrac data save request")
