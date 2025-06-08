@@ -633,7 +633,7 @@
                 } else {
                     set_budget.readOnly = true;
                     bud_edit.textContent = "Edit";
-                     fetch(domain+'/dem/set_budget/'+ document.getElementById("set_budget").value)
+                     fetch(domain+'dem/set_budget/'+ document.getElementById("set_budget").value)
                     .then(response => response.json())
                     .then(data => {
                             alert(data.response);
@@ -652,7 +652,7 @@
                     labels: ['Budget','Spent'],
                     datasets: [{
                         label: 'Data Values',
-                        data: [{{set_budget}},{{eff_spent}}],
+                        data: [({{set_budget}}-{{eff_spent}}),{{eff_spent}}],
                         backgroundColor: ['rgba(75, 192, 192, 0.2)','rgba(75, 192, 192, 1)'],
                         borderColor: 'rgba(75, 192, 192, 1)',
                         borderWidth: 1
