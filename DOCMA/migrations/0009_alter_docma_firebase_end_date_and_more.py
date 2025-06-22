@@ -2,10 +2,11 @@
 
 import datetime
 from django.db import migrations, models
-from django.utils.timezone import utc
-
+# from django.utils.timezone import utc
+from datetime import datetime, timezone
 
 class Migration(migrations.Migration):
+    utc = datetime.now(timezone.utc)
 
     dependencies = [
         ('DOCMA', '0008_alter_docma_firebase_end_date_and_more'),
