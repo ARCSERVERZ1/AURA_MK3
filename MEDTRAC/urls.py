@@ -9,5 +9,6 @@ urlpatterns = [
     path('add_health_incident',views.add_health_incident),
     path('food_log/',views.food_logger),
     path('food_tracker/',views.food_tracker_home),
-    path('log_food_data', views.log_food_data)
+    path('log_food_data', views.log_food_data),
+    path('graph_data', views.food_tracker_graph_data)
 ]

@@ -4,9 +4,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Food Entry Form</title>
+  <title>Food Tracker with Dashboard</title>
+
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{% static 'tools.js' %}"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <style>
+    canvas {
+      max-height: 500px;
+    }
+    .form-select, .form-control {
+      width: auto;
+      display: inline-block;
+      margin-left: 10px;
+    }
+  </style>
 </head>
 <body>
 
@@ -16,9 +32,33 @@
   <button class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#addFormModal">Add</button>
 </nav>
 
+<!-- Filter Bar + Chart -->
+<div class="container mt-4">
+  <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
+    <h5 class="mb-0">Meal Timing Chart</h5>
+    <select class="form-select" id="filterName">
+         <option selected>Filter by Name</option>
+        {% for i in users %}
+        <option>{{i}}</option>
+        {% endfor %}
+    </select>
+    <label for="startTime" class="form-label mb-0 ms-3">Start Time:</label>
+    <input type="date" class="form-control" id="startTime">
+    <label for="endTime" class="form-label mb-0 ms-3">End Time:</label>
+    <input type="date" class="form-control" id="endTime">
+    <button class="btn btn-primary ms-3" onclick="filteredGraph()">Apply Filter</button>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <canvas id="mealChart"></canvas>
+    </div>
+  </div>
+</div>
+
 <!-- Modal -->
 <div class="modal fade" id="addFormModal" tabindex="-1" aria-labelledby="addFormModalLabel" aria-hidden="true">
-<div class="modal-dialog modal-dialog-centered modal-xl">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content">
       <form id="multiMealForm" novalidate>
         <div class="modal-header">
@@ -27,127 +67,64 @@
         </div>
 
         <div class="modal-body">
-          <!-- General Name -->
           <div class="mb-3">
             <label class="form-label">Name</label>
-            <input type="text" class="form-control" name="user_name" required />
+            <select  class="form-control" name="user_name">
+
+               {% for i in users %}
+                 <option>{{i}}</option>
+               {% endfor %}
+            </select>
+
           </div>
 
-          <!-- Tabs -->
           <ul class="nav nav-tabs mb-3" role="tablist">
             <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#breakfastTab" type="button">Breakfast</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#lunchTab" type="button">Lunch</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#dinnerTab" type="button">Dinner</button></li>
           </ul>
 
-          <!-- Tab Content -->
           <div class="tab-content">
-            <!-- Breakfast Tab -->
-            <div class="tab-pane fade show active" id="breakfastTab">
-              <h5>Breakfast</h5>
+           {% for meal in meal_list %}
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="{{ meal }}Tab">
+              <h5>{{ meal|title }}</h5>
               <div class="form-check form-switch mb-2">
-                <input class="form-check-input skip-toggle" type="checkbox" id="skipBreakfast" data-meal="breakfast">
-                <label class="form-check-label" for="skipBreakfast">Skip Breakfast Entry</label>
+                <input class="form-check-input skip-toggle" type="checkbox" id="skip{{ meal|title }}" data-meal="{{ meal }}">
+                <label class="form-check-label" for="skip{{ meal|title }}">Skip {{ meal|title }} Entry</label>
               </div>
-              <div class="meal-fields" data-meal="breakfast">
+              <div class="meal-fields" data-meal="{{ meal }}">
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <label class="form-label">Quantity</label>
-                    <select class="form-select" name="breakfast_qty" required>
+                    <select class="form-select" name="{{ meal }}_qty" required>
                       <option value="" disabled selected>Select</option>
-                      <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
-                      <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
-                    </select>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Summary</label>
-                    <input type="text" class="form-control" name="breakfast_summary" required />
-                  </div>
-                </div>
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Date & Time</label>
-                    <input type="datetime-local" class="form-control" name="breakfast_datetime" required />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Category</label>
-                    <select class="form-select" name="breakfast_category" required>
-                      <option value="" disabled selected>Select</option>
-                      <option>Veg</option><option>Non-Veg</option><option>Egg</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <!-- Lunch Tab -->
-            <div class="tab-pane fade" id="lunchTab">
-              <h5>Lunch</h5>
-              <div class="form-check form-switch mb-2">
-                <input class="form-check-input skip-toggle" type="checkbox" id="skipLunch" data-meal="lunch">
-                <label class="form-check-label" for="skipLunch">Skip Lunch Entry</label>
-              </div>
-              <div class="meal-fields" data-meal="lunch">
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Quantity</label>
-                    <select class="form-select" name="lunch_qty" required>
-                      <option value="" disabled selected>Select</option>
-                      <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
-                      <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
-                    </select>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Summary</label>
-                    <input type="text" class="form-control" name="lunch_summary" required />
-                  </div>
-                </div>
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Date & Time</label>
-                    <input type="datetime-local" class="form-control" name="lunch_datetime" required />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Category</label>
-                    <select class="form-select" name="lunch_category" required>
-                      <option value="" disabled selected>Select</option>
-                      <option>Veg</option><option>Non-Veg</option><option>Egg</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
 
-            <!-- Dinner Tab -->
-            <div class="tab-pane fade" id="dinnerTab">
-              <h5>Dinner</h5>
-              <div class="form-check form-switch mb-2">
-                <input class="form-check-input skip-toggle" type="checkbox" id="skipDinner" data-meal="dinner">
-                <label class="form-check-label" for="skipDinner">Skip Dinner Entry</label>
-              </div>
-              <div class="meal-fields" data-meal="dinner">
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Quantity</label>
-                    <select class="form-select" name="dinner_qty" required>
-                      <option value="" disabled selected>Select</option>
-                      <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
-                      <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
                     </select>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label">Summary</label>
-                    <input type="text" class="form-control" name="dinner_summary" required />
+                    <input type="text" class="form-control" name="{{ meal }}_summary" required />
                   </div>
                 </div>
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <label class="form-label">Date & Time</label>
-                    <input type="datetime-local" class="form-control" name="dinner_datetime" required />
+                    <input type="datetime-local" class="form-control" name="{{ meal }}_datetime" required />
                   </div>
                   <div class="col-md-6">
                     <label class="form-label">Category</label>
-                    <select class="form-select" name="dinner_category" required>
+                    <select class="form-select" name="{{ meal }}_category" required>
                       <option value="" disabled selected>Select</option>
                       <option>Veg</option><option>Non-Veg</option><option>Egg</option>
                     </select>
@@ -155,28 +132,25 @@
                 </div>
               </div>
             </div>
+            {% endfor %}
           </div>
         </div>
 
-        <!-- Footer Buttons -->
         <div class="modal-footer">
           <button type="submit" class="btn btn-success">Submit</button>
           <button type="button" class="btn btn-warning" id="saveAndAdd">Save & Add Another</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
-
       </form>
     </div>
   </div>
 </div>
-
+<div id="tableContainer" class="mt-4"></div>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Custom JS -->
 <script>
-  // Enable/disable required based on skip toggles
-  document.querySelectorAll('.skip-toggle').forEach(toggle => {
+<!--  add data logic-->
+   document.querySelectorAll('.skip-toggle').forEach(toggle => {
     toggle.addEventListener('change', function () {
       const meal = this.dataset.meal;
       const fields = document.querySelector(`.meal-fields[data-meal="${meal}"]`);
@@ -243,6 +217,221 @@
       bootstrap.Modal.getInstance(document.getElementById('addFormModal')).hide();
     }
   });
+</script>
+
+<!-- JS Logic -->
+<script>
+  const categoryColors = {
+    'Veg': 'green',
+    'Non-Veg': 'red',
+    'Egg': 'gold'
+  };
+
+  const lineColors = {
+    breakfast: 'blue',
+    lunch: 'orange',
+    dinner: 'purple'
+  };
+
+  const toHours = time => {
+    const [h, m] = time.split(':').map(Number);
+    return h + m / 60;
+  };
+
+  let chart;
+  let defaultLabels = [];
+  let defaultMealData = {};
+
+  function buildMealDataset(meal, entries, startHour, endHour) {
+    return {
+      label: meal.charAt(0).toUpperCase() + meal.slice(1),
+      data: entries.map(entry => {
+        const hour = toHours(entry.time);
+        return (hour >= startHour && hour <= endHour) ? hour : null;
+      }),
+      borderColor: lineColors[meal],
+      backgroundColor: lineColors[meal],
+      tension: 0.3,
+      pointRadius: 6,
+      pointBackgroundColor: entries.map(entry => categoryColors[entry.category]),
+      spanGaps: true
+    };
+  }
+
+  function drawChart(start = '04:00', end = '24:00') {
+    const startHour = toHours(start);
+    const endHour = toHours(end);
+
+    const datasets = Object.entries(defaultMealData).map(([meal, data]) =>
+      buildMealDataset(meal, data, startHour, endHour)
+    );
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(document.getElementById('mealChart'), {
+      type: 'line',
+      data: {
+        labels: defaultLabels,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const value = context.raw;
+                if (value == null) return null;
+                const h = Math.floor(value);
+                const m = Math.round((value - h) * 60);
+                return `${context.dataset.label}: ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Date' }
+          },
+          y: {
+            title: { display: true, text: 'Time of Meal (HH:MM)' },
+            min: 6,
+            max: 24,
+            ticks: {
+              callback: value => {
+                const h = Math.floor(value);
+                const m = Math.round((value - h) * 60);
+                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+// table start
+
+function renderRawDataTable(rawData) {
+  let lastDate = null;
+  let colorToggle = false;
+
+  const tableId = "rawDataTable";
+
+  const tableHTML = `
+    <div class="table-responsive mt-4 px-3">
+      <table id="${tableId}" class="table table-bordered table-striped">
+        <thead class="table-dark">
+          <tr>
+            <th>Timestamp</th>
+            <th>Meal Type</th>
+            <th>Food Type</th>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Edit</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rawData.map(entry => {
+            const dateStr = new Date(entry.time_stamp).toISOString().split('T')[0];
+
+            if (dateStr !== lastDate) {
+              colorToggle = !colorToggle;
+              lastDate = dateStr;
+            }
+
+            const rowClass = colorToggle ? 'table-light' : 'table-secondary';
+
+            return `
+              <tr class="${rowClass}">
+                <td>${new Date(entry.time_stamp).toLocaleString([], {
+                  year: 'numeric', month: '2-digit', day: '2-digit',
+                  hour: '2-digit', minute: '2-digit'
+                })}</td>
+                <td>${entry.food_category}</td>
+                <td>${entry.food_type}</td>
+                <td>${entry.food_description}</td>
+                <td>${entry.food_qty}</td>
+                <td><button class="btn btn-sm btn-primary" onclick="editEntry(${entry.id})">Edit</button></td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById('tableContainer').innerHTML = tableHTML;
+
+  // Initialize DataTable after rendering
+  setTimeout(() => {
+    $(`#${tableId}`).DataTable({
+      order: [[0, 'desc']], // sort by timestamp descending
+      pageLength: 10,
+    });
+  }, 100);
+}
+
+
+
+
+
+
+
+// table end
+  async function filteredGraph(){
+    const apiUrl = "/medtrac/graph_data";
+    const filterUser = document.getElementById('filterName').value;
+    const startDate = document.getElementById('startTime').value;
+    const endDate = document.getElementById('endTime').value;
+
+    if (!filterUser || !startDate || !endDate) {
+      alert("Please select all filter options.");
+      return;
+    }
+    const payload = {
+      type: 'filtered',
+      filter_user: filterUser,
+      start_date: startDate,
+      end_date: endDate
+    };
+
+    try {
+      const response = await callApiSecurely(apiUrl, payload);
+      defaultMealData = response.meal_data;
+      defaultLabels = response.labels;
+      drawChart(); // Draw chart after data is fetched
+       renderRawDataTable(response.raw_data);
+    } catch (error) {
+      console.error("API call failed:", error);
+    }
+  }
+
+
+
+  async function loadInitialGraph() {
+    const apiUrl = "/medtrac/graph_data";
+    const url_data = {
+      type: 'unfiltered',
+      filter_user: '{{users.0}}',
+      start_date: '{{default_dates.1}}',
+      end_date: '{{default_dates.0}}'
+    };
+
+    try {
+      const response = await callApiSecurely(apiUrl, url_data);
+      defaultMealData = response.meal_data;
+      defaultLabels = response.labels;
+      drawChart(); // Draw chart after data is fetched
+      renderRawDataTable(response.raw_data);
+    } catch (error) {
+      console.error("API call failed:", error);
+    }
+  }
+
+  loadInitialGraph();
+
+
 </script>
 
 </body>

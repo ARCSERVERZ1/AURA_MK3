@@ -3,7 +3,7 @@ from MEDTRAC.models import *
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Sum
 import pytz
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
@@ -11,10 +11,11 @@ from rest_framework.decorators import api_view, permission_classes
 from django.http import JsonResponse
 import json
 
+
 def get_users(requests):
     lastname = requests.user.last_name
     users = User.objects.all()
-    user_list = [str(requests.user.first_name).capitalize()]
+    user_list = [str(requests.user.first_name)]
     for user in users:
         if str(user.last_name).strip().lower() == str(
                 lastname).strip().lower() and requests.user.first_name != user.first_name:
@@ -169,11 +170,63 @@ def food_logger(request):
 
         data.save()
     return render(request, 'Medtrac_AddFoodLog.html')
+def parse_date(date_str):
+    try:
+        # Try parsing as YYYY-MM-DD
+        return datetime.strptime(date_str, "%Y-%m-%d").strftime("%Y-%m-%d")
+    except ValueError:
+        # Fallback to full month name format
+        return datetime.strptime(date_str, "%B %d, %Y").strftime("%Y-%m-%d")
+
+
+
+@api_view(['POST'])
+def food_tracker_graph_data(requests):
+    data = requests.data
+    print(data)
+    # if data['type'] == 'unfiltered':
+    #     start_date = '2025-06-18'
+    #     end_date = '2025-06-22'
+    #     user = 'sanjay'
+    # else:
+    user = data['filter_user']
+    start_date = parse_date(data['start_date'])
+    end_date = parse_date(data['end_date'])
+    print(user ,start_date ,end_date )
+    grouped_data = {
+        'breakfast': [],
+        'lunch': [],
+        'dinner': []
+    }
+    dates = []
+    raw_data = MealDataLog.objects.filter(user=user, date__range=(start_date, end_date))
+    raw_data = list(raw_data.values())
+    print(raw_data[0])
+    for entry in raw_data:
+        meal_type = entry['food_category']  # ensure key consistency
+        grouped_data[meal_type].append({
+            'time': entry['time_stamp'].strftime('%H:%M'),
+            'category': entry['food_type']
+
+        })
+        dates.append(entry['date'].strftime('%Y-%m-%d'))
+    dates = set(dates)
+    # print({'meal_data': grouped_data, 'labels': list(dates)})
+    return JsonResponse({'meal_data': grouped_data, 'labels': list(dates) , 'raw_data':raw_data})
 
 
 def food_tracker_home(requests):
-    print("Medtrac requests")
-    return render(requests, 'Medtrac_Logfood.html')
+    print("Medtrac requess")
+    today = date.today()
+    seven_days_ago = today - timedelta(days=7)
+    # meal_data, dates = food_tracker_graph_data(requests ,requests.user.username, seven_days_ago, today)
+    context = {
+        'users': get_users(requests),
+        'meal_list': ['breakfast', 'lunch', 'dinner'],
+        'default_dates': [today, seven_days_ago]
+    }
+
+    return render(requests, 'Medtrac_Logfood.html', context)
 
 
 @api_view(['POST'])
@@ -184,22 +237,25 @@ def log_food_data(requests):
 
     for category in data:
         if category != 'user_name':
-            if not data[category]['skipped'] :
+            if not data[category]['skipped']:
                 print(category)
                 print(data[category]['qty'])
                 print(data[category]['summary'])
                 print(data[category]['datetime'])
                 print(data[category]['category'])
-                save_data = MealDataLog (
-                    user = user ,
-                    food_qty = data[category]['qty'] ,
-                    food_description = data[category]['summary'] ,
-                    food_type = data[category]['category'],
-                    food_category =category ,
-                    date = datetime.now() ,
-                    time_stamp =  data[category]['datetime'] ,
-                    updated_by = requests.user.username
-                    )
+                dt_str = data[category]['datetime']  # e.g., '2025-06-22T20:45'
+                dt_obj = datetime.fromisoformat(dt_str)  # returns datetime.datetime(2025, 6, 22, 20, 45)
+
+                save_data = MealDataLog(
+                    user=user,
+                    food_qty=data[category]['qty'],
+                    food_description=data[category]['summary'],
+                    food_type=data[category]['category'],
+                    food_category=category,
+                    date=dt_obj.date(),
+                    time_stamp=data[category]['datetime'],
+                    updated_by=requests.user.username
+                )
                 save_data.save()
 
     return JsonResponse({'Result': 'Data Updated'}, safe=False)
