@@ -1,0 +1,249 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Food Entry Form</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="{% static 'tools.js' %}"></script>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+  <a class="navbar-brand" href="#">Food Tracker</a>
+  <button class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#addFormModal">Add</button>
+</nav>
+
+<!-- Modal -->
+<div class="modal fade" id="addFormModal" tabindex="-1" aria-labelledby="addFormModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <form id="multiMealForm" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title">Add Food Entries</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <!-- General Name -->
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" name="user_name" required />
+          </div>
+
+          <!-- Tabs -->
+          <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#breakfastTab" type="button">Breakfast</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#lunchTab" type="button">Lunch</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#dinnerTab" type="button">Dinner</button></li>
+          </ul>
+
+          <!-- Tab Content -->
+          <div class="tab-content">
+            <!-- Breakfast Tab -->
+            <div class="tab-pane fade show active" id="breakfastTab">
+              <h5>Breakfast</h5>
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input skip-toggle" type="checkbox" id="skipBreakfast" data-meal="breakfast">
+                <label class="form-check-label" for="skipBreakfast">Skip Breakfast Entry</label>
+              </div>
+              <div class="meal-fields" data-meal="breakfast">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Quantity</label>
+                    <select class="form-select" name="breakfast_qty" required>
+                      <option value="" disabled selected>Select</option>
+                      <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
+                      <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Summary</label>
+                    <input type="text" class="form-control" name="breakfast_summary" required />
+                  </div>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Date & Time</label>
+                    <input type="datetime-local" class="form-control" name="breakfast_datetime" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" name="breakfast_category" required>
+                      <option value="" disabled selected>Select</option>
+                      <option>Veg</option><option>Non-Veg</option><option>Egg</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lunch Tab -->
+            <div class="tab-pane fade" id="lunchTab">
+              <h5>Lunch</h5>
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input skip-toggle" type="checkbox" id="skipLunch" data-meal="lunch">
+                <label class="form-check-label" for="skipLunch">Skip Lunch Entry</label>
+              </div>
+              <div class="meal-fields" data-meal="lunch">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Quantity</label>
+                    <select class="form-select" name="lunch_qty" required>
+                      <option value="" disabled selected>Select</option>
+                      <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
+                      <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Summary</label>
+                    <input type="text" class="form-control" name="lunch_summary" required />
+                  </div>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Date & Time</label>
+                    <input type="datetime-local" class="form-control" name="lunch_datetime" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" name="lunch_category" required>
+                      <option value="" disabled selected>Select</option>
+                      <option>Veg</option><option>Non-Veg</option><option>Egg</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dinner Tab -->
+            <div class="tab-pane fade" id="dinnerTab">
+              <h5>Dinner</h5>
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input skip-toggle" type="checkbox" id="skipDinner" data-meal="dinner">
+                <label class="form-check-label" for="skipDinner">Skip Dinner Entry</label>
+              </div>
+              <div class="meal-fields" data-meal="dinner">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Quantity</label>
+                    <select class="form-select" name="dinner_qty" required>
+                      <option value="" disabled selected>Select</option>
+                      <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
+                      <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Summary</label>
+                    <input type="text" class="form-control" name="dinner_summary" required />
+                  </div>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Date & Time</label>
+                    <input type="datetime-local" class="form-control" name="dinner_datetime" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" name="dinner_category" required>
+                      <option value="" disabled selected>Select</option>
+                      <option>Veg</option><option>Non-Veg</option><option>Egg</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Submit</button>
+          <button type="button" class="btn btn-warning" id="saveAndAdd">Save & Add Another</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JS -->
+<script>
+  // Enable/disable required based on skip toggles
+  document.querySelectorAll('.skip-toggle').forEach(toggle => {
+    toggle.addEventListener('change', function () {
+      const meal = this.dataset.meal;
+      const fields = document.querySelector(`.meal-fields[data-meal="${meal}"]`);
+      const inputs = fields.querySelectorAll('input, select, textarea');
+      inputs.forEach(el => {
+        if (this.checked) {
+          el.removeAttribute('required');
+        } else {
+          el.setAttribute('required', 'required');
+        }
+      });
+    });
+  });
+
+  function collectFormData(form) {
+    const formData = new FormData(form);
+    const data = {};
+
+    ['breakfast', 'lunch', 'dinner'].forEach(meal => {
+      const skip = document.getElementById(`skip${meal.charAt(0).toUpperCase() + meal.slice(1)}`).checked;
+      data[meal] = { skipped: skip };
+    });
+
+    for (let [key, val] of formData.entries()) {
+      if (key === 'user_name') {
+        data['user_name'] = val;
+      } else {
+        const [meal, field] = key.split('_');
+        if (!data[meal].skipped) {
+          data[meal][field] = val;
+        }
+      }
+    }
+
+    return data;
+  }
+
+
+
+  function saveDataAsJSON(data) {
+    const json = JSON.stringify(data, null, 2);
+    const apiUrl = "/medtrac/log_food_data";
+    callApiSecurely(apiUrl , json );
+    console.log("Saved JSON:", json);
+    alert("Data saved in JSON format. Check console.");
+  }
+
+  document.getElementById('saveAndAdd').addEventListener('click', () => {
+    const form = document.getElementById('multiMealForm');
+    if (form.checkValidity()) {
+      const data = collectFormData(form);
+      saveDataAsJSON(data);
+    } else {
+      form.reportValidity();
+    }
+  });
+
+  document.getElementById('multiMealForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (this.checkValidity()) {
+      const data = collectFormData(this);
+      saveDataAsJSON(data);
+      this.reset();
+      bootstrap.Modal.getInstance(document.getElementById('addFormModal')).hide();
+    }
+  });
+</script>
+
+</body>
+</html>

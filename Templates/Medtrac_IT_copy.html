@@ -1,0 +1,352 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Health Recorder</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="{% static 'tools.js' %}"></script>
+</head>
+<body class="bg-dark text-light">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-info px-5" style="height: 120px;">
+    <a class="navbar-brand" style="font-size: 2rem;" href="/home">Home /</a>
+    <a class="navbar-brand" style="font-size: 2rem;">Medtrac /</a>
+    <div class="ms-auto d-flex align-items-center gap-5">
+      <!-- Dropdown -->
+      <select id="navDropdown" class="form-select" style="font-size: 2rem; width: 200px; height:70px;">
+        {% for name in users %}
+          <option value="{{ name }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Add Button -->
+      <button class="btn btn-light" id="addBtn" style="font-size: 2rem; width: 100px; height:70px;">Add</button>
+      <a class="btn btn-light" href = '/admin/MEDTRAC/config_discomfort/' style="font-size: 2rem; width: 100px; height:70px;">Add Discomfort</a>
+    </div>
+  </nav>
+
+  <!-- Card Container -->
+  <div class="container-fluid d-flex justify-content-center align-items-center p-4">
+    <div id="healthCard" class="card bg-light text-dark p-5 my-5 mx-4 shadow rounded-4" style="display: none; width: 90%; height: 90%;">
+      <h5 class="card-title" style="font-size: 4rem;">Health Recorder</h5>
+      <div class="card-body d-flex flex-column justify-content-between">
+
+        <!-- Form -->
+        <form id="healthForm" method="POST" action="add_health_incident">
+        {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label" style="font-size: 2.5rem;">Person *</label>
+            <select id="Person" name="Person" class="form-select" style="font-size: 2rem; height: 100px; border: 2px solid #343a40;" required>
+              {% for name in users %}
+                <option value="{{ name }}">{{ name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" style="font-size: 2.5rem;">Discomfort * & Severity *</label>
+            <div class="row">
+              <div class="col-9">
+                <select id="Discomfort" name="Discomfort" class="form-select" style="font-size: 2rem; height: 100px; border: 2px solid #343a40;" required>
+                   {% for discomfort in discomforts %}
+                    <option value="{{ discomfort.discomfort }}">{{ discomfort.discomfort }}</option>
+                   {% endfor %}
+                </select>
+              </div>
+              <div class="col-3">
+                <select id="Severity" name="Severity" class="form-select" style="font-size: 2rem; height: 100px; border: 2px solid #343a40;" required>
+                  <option value="" disabled selected>Severity</option>
+                  {% for i in "12345678910" %}
+                    <option value="{{ forloop.counter }}">{{ forloop.counter }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" style="font-size: 2.5rem;">Remarks</label>
+            <textarea id="Remarks" name="Remarks" class="form-control" style="font-size: 3.5rem; height: 200px; border: 2px solid #343a40;"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" style="font-size: 2.5rem;">Medication *</label>
+            <input type="text" name="Medication" id="Medication" class="form-control" style="font-size: 3.5rem; height: 100px; border: 2px solid #343a40;" required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" style="font-size: 2.5rem;">Approx Start * & End Time </label>
+            <div class="row">
+              <div class="col-6">
+                <input type="datetime-local" id="start_time" name="start_time" class="form-control" style="height: 100px; border: 2px solid #343a40; font-size: 28px;" required />
+              </div>
+              <div class="col-6">
+                <input type="datetime-local" id="end_time" name="end_time" class="form-control" style="height: 100px; border: 2px solid #343a40; font-size: 28px;" />
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" style="font-size: 2.5rem;">Remarks</label>
+            <textarea id="After_Remarks" name="After_Remarks" class="form-control" style="font-size: 3.5rem; height: 200px; border: 2px solid #343a40; "></textarea>
+          </div>
+
+          <div class="mb-3 d-flex justify-content-center my-5 gap-5">
+            <button type="submit" class="btn btn-primary" style="padding: 1.5rem 3rem; font-size: 2.5rem;" id="recordBtn">Record Data</button>
+            <button type="button" class="btn btn-secondary" style="padding: 1.5rem 3rem; font-size: 2.5rem;" id="cancelBtn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carousel -->
+  <div id="recordCarousel" class="carousel slide mt-5" data-bs-ride="carousel" data-bs-interval="false">
+    <div class="carousel-inner">
+      {% for user, records in all_records.items %}
+        {% for record in records %}
+          <div class="carousel-item {% if forloop.first and forloop.parentloop.first %}active{% endif %}">
+            <div class="d-flex justify-content-center">
+              <div class="card bg-light shadow-sm mt-2" style="width: 42rem; min-height: 60rem; font-size: 1.4rem;">
+                <div class="card-header bg-info text-white d-flex justify-content-between">
+                  <h3 class="mb-0" style="font-size: 3.0rem;">{{ user }}</h3>
+                  <input id="id" name="id" style="width: 2px; height: 2px;">
+                  <small class="fw-bold align-self-center" style="font-size: 2.0rem;">{{ record.apprx_start_time|date:"M d, Y H:i" }}</small>
+                </div>
+
+                <div class="card-body">
+                  <h1 class="card-title text-danger fw-bold" style="font-size: 4.0rem;">{{ record.discomfort }}</h1>
+                  <p style="font-size: 2.5rem;">
+                    <strong>Severity:</strong>
+                    {% if record.severity == "1" %}
+                      Very Low
+                    {% elif record.severity == "2" %}
+                      Low
+                    {% elif record.severity == "3" %}
+                      Low-Medium
+                    {% elif record.severity == "4" %}
+                      Medium
+                    {% elif record.severity == "5" %}
+                      Medium
+                    {% elif record.severity == "6" %}
+                      Medium-High
+                    {% elif record.severity == "7" %}
+                      High
+                    {% elif record.severity == "8" %}
+                      Very High
+                    {% elif record.severity == "9" %}
+                      Extremely High
+                    {% elif record.severity == "10" %}
+                      Extremely High
+                    {% else %}
+                      Unknown
+                    {% endif %} - {{ record.severity }}
+                  </p>
+
+                  <p style="font-size: 2.5rem;"><strong>Medication:</strong> {{ record.medication|default:"N/A" }}</p>
+
+                  <hr />
+
+                  <!-- During Discomfort -->
+                  <div class="mb-4" style="white-space: normal; word-break: break-word;">
+                    <p class="mb-1" style="font-size: 2.5rem;"><strong>During Discomfort:</strong></p>
+                    <p class="text-muted" style="font-size: 2.5rem;">{{ record.while_remarks|default:"No remarks" }}</p>
+                  </div>
+
+                  <!-- After -->
+                  <div class="mb-4" style="white-space: normal; word-break: break-word;">
+                    <p class="mb-1" style="font-size: 2.5rem;"><strong>After remarks:</strong></p>
+                    <p class="text-muted" style="font-size: 2.5rem;">{{ record.after_remarks|default:"No remarks" }}</p>
+                  </div>
+
+                  <!-- Time Details -->
+                  <div class="mb-3">
+                    <p style="font-size: 2.5rem;"><strong>Start Time:</strong> {{ record.apprx_start_time }}</p>
+                    <p style="font-size: 2.5rem;"><strong>End Time:</strong> {{ record.apprx_end_time }}</p>
+                    <p style="font-size: 2.5rem;"><strong>Total Duration:</strong>
+                      {% if record.apprx_start_time and record.apprx_end_time %}
+                        {{ record.apprx_start_time|timesince:record.apprx_end_time }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3 px-4">
+                   <a class="btn btn-outline-danger btn-lg px-5 py-3 fs-4 fw-bold"  onclick="DeleteRecord({{ record.id }})">Delete</a>
+                  <a class="btn btn-outline-primary btn-lg px-5 py-3 fs-4 fw-bold" onclick="editRecord({{ record.id }})">Edit</a>
+                </div>
+
+
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+
+    <!-- Controls -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#recordCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#recordCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+<script>
+let is_edit = '' ;
+
+var carousel = new bootstrap.Carousel('#recordCarousel', {
+  interval: 20000
+})
+
+    const addBtn = document.getElementById('addBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const healthCard = document.getElementById('healthCard');
+    const healthForm = document.getElementById('healthForm');
+
+    addBtn.addEventListener('click', () => {
+      is_edit = 'False'
+      healthCard.style.display = 'block';
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      healthCard.style.display = 'none';
+    });
+
+    healthForm.addEventListener('submit', (e) => {
+      e.preventDefault(); // Stop normal form submit
+      if (
+        document.getElementById('Person').value &&
+        document.getElementById('Discomfort').value.trim() &&
+        document.getElementById('Severity').value &&
+        document.getElementById('Medication').value.trim() &&
+        document.getElementById('start_time').value
+      ) {
+        if (is_edit === 'True'){
+            submit_edit_data();
+          }
+          else {
+            healthForm.submit();
+          }
+
+      } else {
+        alert('Please fill all required fields marked with *');
+      }
+    });
+
+function formatDateTimeLocal(datetimeStr) {
+  // Remove the trailing "Z" if present
+  const cleanStr = datetimeStr.replace(/Z$/, '');
+
+  // Split date and time parts
+  const [datePart, timePart] = cleanStr.split('T');
+  const [hour, minute] = timePart.split(':');
+
+  return `${datePart}T${hour}:${minute}`;
+}
+
+function test(){
+
+if (is_edit === 'True'){
+  console.log(is_edit);
+  }
+ else {
+  console.log(is_edit);
+ }
+
+}
+
+function  submit_edit_data(){
+
+let dataToSend = {
+    'id' : document.getElementById("id").value ,
+    'Person' :document.getElementById("Person").value ,
+    'Discomfort' : document.getElementById("Discomfort").value,
+    'Severity' :  document.getElementById("Severity").value,
+    'Remarks' :  document.getElementById("Remarks").value,
+    'Medication' :  document.getElementById("Medication").value,
+    'After_Remarks' :  document.getElementById("After_Remarks").value,
+    'start_time' :  document.getElementById("start_time").value,
+    'end_time' :  document.getElementById("end_time").value
+};
+
+ const apiUrl = "update_data_by_id";
+
+ callApiSecurely(apiUrl, dataToSend)
+  .then(function(result) {
+  console.log(result);
+   location.reload();
+  })
+  .catch(function(error) {
+    console.error("API call failed:", error);
+  });
+
+
+
+}
+
+
+function DeleteRecord(  id){
+   const apiUrl = "delete_data_by_id";
+   const dataToSend = { id: id };
+   let result = confirm("Do you want to Delete");
+if (result) {
+    callApiSecurely(apiUrl, dataToSend)
+   .then(function(result) {
+   console.log(result);
+   location.reload();
+   })
+  .catch(function(error) {
+    console.error("API call failed:", error);
+  });
+} else {
+  console.log("User chose NO");
+}
+
+
+
+}
+
+
+function editRecord(id) {
+  is_edit = 'True'
+  console.log(id);
+  healthCard.style.display = 'block';
+
+
+  const apiUrl = "get_data_by_id";
+  const dataToSend = { id: id };
+  callApiSecurely(apiUrl, dataToSend)
+  .then(function(result) {
+
+   const record = result.Result[0];
+      document.getElementById("id").value  = record.id;
+      document.getElementById("Person").value = record.user;
+      document.getElementById("Discomfort").value = record.discomfort;
+      document.getElementById("Severity").value = record.severity;
+      document.getElementById("Remarks").value = record.while_remarks || '';
+      document.getElementById("Medication").value = record.medication;
+      document.getElementById("After_Remarks").value = record.after_remarks || '';
+      document.getElementById("start_time").value = formatDateTimeLocal(record.apprx_start_time);
+      document.getElementById("end_time").value = formatDateTimeLocal(record.apprx_end_time);
+
+  })
+  .catch(function(error) {
+    console.error("API call failed:", error);
+  });
+}
+
+  </script>

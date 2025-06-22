@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Food Entry Form</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+    <a class="navbar-brand" href="#">Food Tracker</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <button class="btn btn-primary mt-2 mt-lg-0" data-bs-toggle="modal" data-bs-target="#addFormModal">
+        Add
+      </button>
+    </div>
+  </nav>
+
+  <!-- Modal with Tabs -->
+  <div class="modal fade" id="addFormModal" tabindex="-1" aria-labelledby="addFormModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addFormModalLabel">Add Food Entry</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs nav-fill" id="mealTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="breakfast-tab" data-bs-toggle="tab" data-bs-target="#breakfast" type="button" role="tab">Breakfast</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="lunch-tab" data-bs-toggle="tab" data-bs-target="#lunch" type="button" role="tab">Lunch</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="dinner-tab" data-bs-toggle="tab" data-bs-target="#dinner" type="button" role="tab">Dinner</button>
+          </li>
+        </ul>
+
+        <div class="tab-content p-3" id="mealTabContent">
+          <!-- Form Template -->
+          <div class="tab-pane fade show active" id="breakfast" role="tabpanel">
+            <form class="foodForm" data-meal="Breakfast">
+              <!-- Include form fields below -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Name</label>
+                  <input type="text" class="form-control nameInput" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Food Quantity</label>
+                  <select class="form-select qtyInput" required>
+                    <option value="" disabled selected>Select Quantity</option>
+                    ${[...Array(11).keys()].map(i => `<option>${i}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Food Summary</label>
+                <textarea class="form-control summaryInput" rows="3" required></textarea>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Date & Time</label>
+                  <input type="datetime-local" class="form-control datetimeInput" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Category</label>
+                  <select class="form-select categoryInput" required>
+                    <option value="" disabled selected>Select Category</option>
+                    <option>Veg</option>
+                    <option>Non-Veg</option>
+                    <option>Egg</option>
+                  </select>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Submit</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning saveAndAdd">Save & Add Another</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Clone for Lunch -->
+          <div class="tab-pane fade" id="lunch" role="tabpanel">
+            <form class="foodForm" data-meal="Lunch">
+              <!-- same fields as above -->
+              <!-- (repeated form elements are same structure as in Breakfast) -->
+            </form>
+          </div>
+
+          <!-- Clone for Dinner -->
+          <div class="tab-pane fade" id="dinner" role="tabpanel">
+            <form class="foodForm" data-meal="Dinner">
+              <!-- same fields as above -->
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- JavaScript -->
+  <script>
+    function collectTabFormData(form) {
+      return {
+        name: form.querySelector('.nameInput').value,
+        quantity: form.querySelector('.qtyInput').value,
+        summary: form.querySelector('.summaryInput').value,
+        meal: form.dataset.meal,
+        datetime: form.querySelector('.datetimeInput').value,
+        category: form.querySelector('.categoryInput').value
+      };
+    }
+
+    function logData(data) {
+      console.log('Saved:', data);
+      alert('Saved successfully for ' + data.meal + '!');
+    }
+
+    document.querySelectorAll('.saveAndAdd').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const form = this.closest('form');
+        if (form.checkValidity()) {
+          const data = collectTabFormData(form);
+          logData(data);
+        } else {
+          form.reportValidity();
+        }
+      });
+    });
+
+    document.querySelectorAll('.foodForm').forEach(form => {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (this.checkValidity()) {
+          const data = collectTabFormData(this);
+          logData(data);
+          const modal = bootstrap.Modal.getInstance(document.getElementById('addFormModal'));
+          modal.hide();
+          this.reset();
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

@@ -7,5 +7,7 @@ urlpatterns = [
     path('update_data_by_id',views.update_data_by_id),
     path('delete_data_by_id',views.delete_data_by_id),
     path('add_health_incident',views.add_health_incident),
-    path('food_log/',views.food_logger)
+    path('food_log/',views.food_logger),
+    path('food_tracker/',views.food_tracker_home),
+    path('log_food_data', views.log_food_data)
 ]

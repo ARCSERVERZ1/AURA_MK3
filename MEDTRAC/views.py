@@ -9,6 +9,8 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from rest_framework.decorators import api_view, permission_classes
 from django.http import JsonResponse
+import json
+
 def get_users(requests):
     lastname = requests.user.last_name
     users = User.objects.all()
@@ -25,16 +27,15 @@ def medtrac_dashboard(requests):
     all_records = {}
     discomfort = list(config_discomfort.objects.values())
     for record in card_data:
-            if record['user'] in all_records:
-                all_records[record['user']].append(record)
-            else:
-                all_records[record['user']] = [record]
-
+        if record['user'] in all_records:
+            all_records[record['user']].append(record)
+        else:
+            all_records[record['user']] = [record]
 
     res = {
         'users': get_users(requests),
-        'discomforts' :discomfort ,
-        'all_records' : all_records
+        'discomforts': discomfort,
+        'all_records': all_records
     }
 
     return render(requests, 'Medtrac_IT.html', context=res)
@@ -76,20 +77,20 @@ def delete_data_by_id(request):
         return JsonResponse({'Result': 'Exception while Deleting data'}, safe=False)
 
 
-@api_view( ['POST'])
+@api_view(['POST'])
 def get_data_by_id(requests):
-    print( requests.data)
-    data = list(HealthIncidentLogs.objects.filter( id = requests.data['id']).values())
+    print(requests.data)
+    data = list(HealthIncidentLogs.objects.filter(id=requests.data['id']).values())
     print(data[0]['apprx_start_time'])
-    return JsonResponse({'Result':data} , safe = False)
+    return JsonResponse({'Result': data}, safe=False)
 
 
 @api_view(['POST'])
 def update_data_by_id(request):
     try:
-        print( request.data)
+        print(request.data)
 
-        record_data = HealthIncidentLogs.objects.filter( id = request.data['id'])
+        record_data = HealthIncidentLogs.objects.filter(id=request.data['id'])
 
         record_data.update(
             user=request.data['Person'],
@@ -106,6 +107,7 @@ def update_data_by_id(request):
         return JsonResponse({'Result': 'Data Updated'}, safe=False)
     except Exception as e:
         return JsonResponse({'Result': f'Error {e}'}, safe=False)
+
 
 def log_medtrac(requests):
     print(f"medtrac data save request")
@@ -167,3 +169,37 @@ def food_logger(request):
 
         data.save()
     return render(request, 'Medtrac_AddFoodLog.html')
+
+
+def food_tracker_home(requests):
+    print("Medtrac requests")
+    return render(requests, 'Medtrac_Logfood.html')
+
+
+@api_view(['POST'])
+def log_food_data(requests):
+    data = json.loads(requests.data)
+    # print(data , type(data))
+    user = data["user_name"]
+
+    for category in data:
+        if category != 'user_name':
+            if not data[category]['skipped'] :
+                print(category)
+                print(data[category]['qty'])
+                print(data[category]['summary'])
+                print(data[category]['datetime'])
+                print(data[category]['category'])
+                save_data = MealDataLog (
+                    user = user ,
+                    food_qty = data[category]['qty'] ,
+                    food_description = data[category]['summary'] ,
+                    food_type = data[category]['category'],
+                    food_category =category ,
+                    date = datetime.now() ,
+                    time_stamp =  data[category]['datetime'] ,
+                    updated_by = requests.user.username
+                    )
+                save_data.save()
+
+    return JsonResponse({'Result': 'Data Updated'}, safe=False)
