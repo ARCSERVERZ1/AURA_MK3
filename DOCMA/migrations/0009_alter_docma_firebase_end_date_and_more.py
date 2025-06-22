@@ -16,11 +16,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='docma_firebase',
             name='end_date',
-            field=models.DateField(verbose_name=datetime.datetime(2025, 6, 22, 3, 15, 44, 868096, tzinfo=utc)),
+            field=models.DateField(verbose_name=datetime(2025, 6, 22, 3, 15, 44, 868096, tzinfo=timezone.utc)),
         ),
         migrations.AlterField(
             model_name='docma_firebase',
             name='start_date',
-            field=models.DateField(verbose_name=datetime.datetime(2025, 6, 22, 3, 15, 44, 868096, tzinfo=utc)),
+            field=models.DateField(verbose_name=datetime(2025, 6, 22, 3, 15, 44, 868096, tzinfo=timezone.utc)),
         ),
     ]
