@@ -42,6 +42,7 @@
         <option>{{i}}</option>
         {% endfor %}
     </select>
+
     <label for="startTime" class="form-label mb-0 ms-3">Start Time:</label>
     <input type="date" class="form-control" id="startTime">
     <label for="endTime" class="form-label mb-0 ms-3">End Time:</label>
@@ -149,6 +150,9 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+
+
+
 <!--  add data logic-->
    document.querySelectorAll('.skip-toggle').forEach(toggle => {
     toggle.addEventListener('change', function () {
@@ -339,14 +343,13 @@ function renderRawDataTable(rawData) {
               colorToggle = !colorToggle;
               lastDate = dateStr;
             }
-
             const rowClass = colorToggle ? 'table-light' : 'table-secondary';
-
             return `
               <tr class="${rowClass}">
-                <td>${new Date(entry.time_stamp).toLocaleString([], {
+               <td>${new Date(entry.time_stamp).toLocaleString('en-US', {
                   year: 'numeric', month: '2-digit', day: '2-digit',
-                  hour: '2-digit', minute: '2-digit'
+                  hour: '2-digit', minute: '2-digit',
+                  timeZone: 'UTC'
                 })}</td>
                 <td>${entry.food_category}</td>
                 <td>${entry.food_type}</td>
@@ -420,8 +423,13 @@ function renderRawDataTable(rawData) {
 
     try {
       const response = await callApiSecurely(apiUrl, url_data);
+      console.log(response);
       defaultMealData = response.meal_data;
       defaultLabels = response.labels;
+      document.getElementById("filterName").value = response.user;
+      document.getElementById('startTime').value = response.start_date;
+      document.getElementById('endTime').value = response.end_date;
+
       drawChart(); // Draw chart after data is fetched
       renderRawDataTable(response.raw_data);
     } catch (error) {

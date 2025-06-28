@@ -34,23 +34,21 @@
 
 <!-- Filter Bar + Chart -->
 <div class="container mt-4">
-  <div class="d-flex flex-wrap align-items-center gap-2">
-    <h5 class="mb-0 me-2">Meal Timing Chart</h5>
-
-    <select class="form-select form-select-sm w-auto" id="filterName">
-      <option selected disabled>Filter by Name</option>
-      {% for i in users %}
-        <option>{{ i }}</option>
-      {% endfor %}
+  <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
+    <h5 class="mb-0">Meal Timing Chart</h5>
+    <select class="form-select" id="filterName">
+         <option selected>Filter by Name</option>
+        {% for i in users %}
+        <option>{{i}}</option>
+        {% endfor %}
     </select>
 
-    <input type="date" class="form-control form-control-sm w-auto" id="startTime" placeholder="Start Date">
-    <input type="date" class="form-control form-control-sm w-auto" id="endTime" placeholder="End Date">
-
-    <button class="btn btn-sm btn-primary" onclick="filteredGraph()">Apply Filter</button>
+    <label for="startTime" class="form-label mb-0 ms-3">Start Time:</label>
+    <input type="date" class="form-control" id="startTime">
+    <label for="endTime" class="form-label mb-0 ms-3">End Time:</label>
+    <input type="date" class="form-control" id="endTime">
+    <button class="btn btn-primary ms-3" onclick="filteredGraph()">Apply Filter</button>
   </div>
-</div>
-
 
   <div class="card shadow-sm border-0">
     <div class="card-body">
@@ -152,6 +150,9 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+
+
+
 <!--  add data logic-->
    document.querySelectorAll('.skip-toggle').forEach(toggle => {
     toggle.addEventListener('change', function () {
@@ -322,7 +323,7 @@ function renderRawDataTable(rawData) {
   const tableId = "rawDataTable";
 
   const tableHTML = `
-    <div class="table-responsive px-4">
+    <div class="table-responsive mt-4 px-3">
       <table id="${tableId}" class="table table-bordered table-striped">
         <thead class="table-dark">
           <tr>
@@ -425,6 +426,10 @@ function renderRawDataTable(rawData) {
       const response = await callApiSecurely(apiUrl, url_data);
       defaultMealData = response.meal_data;
       defaultLabels = response.labels;
+      document.getElementById("filterName").value = response.user;
+      document.getElementById('startTime').value = response.start_date;
+      document.getElementById('endTime').value = response.end_date;
+
       drawChart(); // Draw chart after data is fetched
       renderRawDataTable(response.raw_data);
     } catch (error) {

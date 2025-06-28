@@ -170,6 +170,8 @@ def food_logger(request):
 
         data.save()
     return render(request, 'Medtrac_AddFoodLog.html')
+
+
 def parse_date(date_str):
     try:
         # Try parsing as YYYY-MM-DD
@@ -179,46 +181,53 @@ def parse_date(date_str):
         return datetime.strptime(date_str, "%B %d, %Y").strftime("%Y-%m-%d")
 
 
-
 @api_view(['POST'])
 def food_tracker_graph_data(requests):
     data = requests.data
     print(data)
-    # if data['type'] == 'unfiltered':
-    #     start_date = '2025-06-18'
-    #     end_date = '2025-06-22'
-    #     user = 'sanjay'
-    # else:
+
     user = data['filter_user']
     start_date = parse_date(data['start_date'])
     end_date = parse_date(data['end_date'])
-    print(user ,start_date ,end_date )
+    print(user, start_date, end_date)
     grouped_data = {
         'breakfast': [],
         'lunch': [],
         'dinner': []
     }
     dates = []
-    raw_data = MealDataLog.objects.filter(user=user, date__range=(start_date, end_date))
+    raw_data = MealDataLog.objects.filter(user=user, date__range=(start_date, end_date)).order_by('time_stamp')
     raw_data = list(raw_data.values())
-    print(raw_data[0])
+    # print(raw_data[0])
     for entry in raw_data:
         meal_type = entry['food_category']  # ensure key consistency
         grouped_data[meal_type].append({
             'time': entry['time_stamp'].strftime('%H:%M'),
-            'category': entry['food_type']
-
+            'category': entry['food_type'],
+            'date': entry['date'].strftime('%Y-%m-%d'),
         })
-        dates.append(entry['date'].strftime('%Y-%m-%d'))
-    dates = set(dates)
+        if entry['date'].strftime('%Y-%m-%d') not in dates:
+            dates.append(entry['date'].strftime('%Y-%m-%d'))
+
+
+    print(dates)
+
+    response = {
+        'meal_data': grouped_data,
+        'labels': dates,
+        'raw_data': raw_data,
+        'user': user,
+        'start_date': start_date,
+        'end_date': end_date
+    }
     # print({'meal_data': grouped_data, 'labels': list(dates)})
-    return JsonResponse({'meal_data': grouped_data, 'labels': list(dates) , 'raw_data':raw_data})
+    return JsonResponse(response)
 
 
 def food_tracker_home(requests):
     print("Medtrac requess")
     today = date.today()
-    seven_days_ago = today - timedelta(days=7)
+    seven_days_ago = today - timedelta(days=10)
     # meal_data, dates = food_tracker_graph_data(requests ,requests.user.username, seven_days_ago, today)
     context = {
         'users': get_users(requests),
