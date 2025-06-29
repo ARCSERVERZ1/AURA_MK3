@@ -10,6 +10,8 @@ from django.shortcuts import redirect
 from rest_framework.decorators import api_view, permission_classes
 from django.http import JsonResponse
 import json
+
+
 # import pandas as pd
 
 
@@ -199,25 +201,25 @@ def food_tracker_graph_data(requests):
     dates = []
     raw_data = MealDataLog.objects.filter(user=user, date__range=(start_date, end_date)).order_by('time_stamp')
     raw_data = list(raw_data.values())
-    # grouped_data , dates = prepare_data(start_date, end_date, raw_data)
-    for entry in raw_data:
-        meal_type = entry['food_category']  # ensure key consistency
-        try:
-            if {'time': entry['time_stamp'].strftime('%H:%M'), 'category': entry['food_type'],
-                'date': entry['date'].strftime('%Y-%m-%d')} in grouped_data[meal_type]:
-                print('')
-            else:
-                # print("NEW" , entry['time_stamp'].strftime('%H:%M'), entry['food_type'],entry['date'].strftime('%Y-%m-%d'),)
-                grouped_data[meal_type].append({
-                    'time': entry['time_stamp'].strftime('%H:%M'),
-                    'category': entry['food_type'],
-                    'date': entry['date'].strftime('%Y-%m-%d'),
-                })
-                # print(grouped_data[meal_type])
-                if entry['date'].strftime('%Y-%m-%d') not in dates:
-                    dates.append(entry['date'].strftime('%Y-%m-%d'))
-        except:
-            pass
+    grouped_data , dates = prepare_data(start_date, end_date, raw_data)
+    # for entry in raw_data:
+    #     meal_type = entry['food_category']  # ensure key consistency
+    #     try:
+    #         if {'time': entry['time_stamp'].strftime('%H:%M'), 'category': entry['food_type'],
+    #             'date': entry['date'].strftime('%Y-%m-%d')} in grouped_data[meal_type]:
+    #             print('')
+    #         else:
+    #             # print("NEW" , entry['time_stamp'].strftime('%H:%M'), entry['food_type'],entry['date'].strftime('%Y-%m-%d'),)
+    #             grouped_data[meal_type].append({
+    #                 'time': entry['time_stamp'].strftime('%H:%M'),
+    #                 'category': entry['food_type'],
+    #                 'date': entry['date'].strftime('%Y-%m-%d'),
+    #             })
+    #             # print(grouped_data[meal_type])
+    #             if entry['date'].strftime('%Y-%m-%d') not in dates:
+    #                 dates.append(entry['date'].strftime('%Y-%m-%d'))
+    #     except:
+    #         pass
 
     # print(dates)
 
@@ -279,6 +281,7 @@ def log_food_data(requests):
     return JsonResponse({'Result': 'Data Updated'}, safe=False)
 
 
+#
 # def prepare_data(start_date, end_date, raw_data):
 #     print("-----------------------------------DF-----------------------------------------------")
 #     df = pd.DataFrame(raw_data)
@@ -310,3 +313,38 @@ def log_food_data(requests):
 #                 template[meal].append({'time': '00:00', 'category': 'skip', 'date': i})
 #
 #     return template , dates
+
+def prepare_data(start_date, end_date, raw_data):
+    print(raw_data)
+    def get_params(date , food_cat):
+
+        for record in raw_data:
+            print(f"|{str(record['date'])} x {date} |record > {record['food_category']} x search > {food_cat} | ")
+            if str(record['date']) == date and record['food_category'] == food_cat:
+                print(f"|{str(record['date'])} x {date} |record > {record['food_category']} x search > {food_cat} | ok")
+                return str(record['time_stamp'].strftime('%H:%M')) , record['food_type']
+        else:
+            # print(f"|{str(record['date'])} = {date} | {food_cat} | 00:00")
+            return '00:00', 'SKIP'
+    print("-----------------------------------DF-----------------------------------------------")
+    template = {
+        'breakfast': [],
+        'lunch': [],
+        'dinner': []
+    }
+
+    start = datetime.strptime(start_date, '%Y-%m-%d')
+    end = datetime.strptime(end_date, '%Y-%m-%d')
+    dates = []
+
+    for i in range((end - start).days + 1):
+        dates.append((start + timedelta(days=i)).strftime('%Y-%m-%d'))
+
+    for i in dates:
+        for meal in ['breakfast', 'lunch', 'dinner']:
+            time , qty = get_params(i , meal)
+            template[meal].append({'time': time, 'category': qty, 'date': i})
+
+
+    #
+    return template, dates
