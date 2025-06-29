@@ -10,6 +10,7 @@ from django.shortcuts import redirect
 from rest_framework.decorators import api_view, permission_classes
 from django.http import JsonResponse
 import json
+import pandas as pd
 
 
 def get_users(requests):
@@ -198,19 +199,27 @@ def food_tracker_graph_data(requests):
     dates = []
     raw_data = MealDataLog.objects.filter(user=user, date__range=(start_date, end_date)).order_by('time_stamp')
     raw_data = list(raw_data.values())
-    # print(raw_data[0])
+    grouped_data , dates = prepare_data(start_date, end_date, raw_data)
     for entry in raw_data:
         meal_type = entry['food_category']  # ensure key consistency
-        grouped_data[meal_type].append({
-            'time': entry['time_stamp'].strftime('%H:%M'),
-            'category': entry['food_type'],
-            'date': entry['date'].strftime('%Y-%m-%d'),
-        })
-        if entry['date'].strftime('%Y-%m-%d') not in dates:
-            dates.append(entry['date'].strftime('%Y-%m-%d'))
+        # try:
+        #     if {'time': entry['time_stamp'].strftime('%H:%M'), 'category': entry['food_type'],
+        #         'date': entry['date'].strftime('%Y-%m-%d')} in grouped_data[meal_type]:
+        #         print('')
+        #     else:
+        #         # print("NEW" , entry['time_stamp'].strftime('%H:%M'), entry['food_type'],entry['date'].strftime('%Y-%m-%d'),)
+        #         grouped_data[meal_type].append({
+        #             'time': entry['time_stamp'].strftime('%H:%M'),
+        #             'category': entry['food_type'],
+        #             'date': entry['date'].strftime('%Y-%m-%d'),
+        #         })
+        #         # print(grouped_data[meal_type])
+        #         if entry['date'].strftime('%Y-%m-%d') not in dates:
+        #             dates.append(entry['date'].strftime('%Y-%m-%d'))
+        # except:
+        #     pass
 
-
-    print(dates)
+    # print(dates)
 
     response = {
         'meal_data': grouped_data,
@@ -268,3 +277,36 @@ def log_food_data(requests):
                 save_data.save()
 
     return JsonResponse({'Result': 'Data Updated'}, safe=False)
+
+
+def prepare_data(start_date, end_date, raw_data):
+    print("-----------------------------------DF-----------------------------------------------")
+    df = pd.DataFrame(raw_data)
+    print(df)
+    template = {
+        'breakfast': [],
+        'lunch': [],
+        'dinner': []
+    }
+
+    start = datetime.strptime(start_date, '%Y-%m-%d')
+    end = datetime.strptime(end_date, '%Y-%m-%d')
+    dates = []
+
+    for i in range((end - start).days + 1):
+        dates.append((start + timedelta(days=i)).strftime('%Y-%m-%d'))
+
+    for i in dates:
+        for meal in ['breakfast', 'lunch', 'dinner']:
+            p_date = datetime.strptime(i, '%Y-%m-%d').date()
+            food_types = df[(df['date'] == p_date) & (df['food_category'] == meal)]['food_type'].unique().tolist()
+            timestamp = df[(df['date'] == p_date) & (df['food_category'] == meal)]['time_stamp'].unique().tolist()
+            food_qty = df[(df['date'] == p_date) & (df['food_category'] == meal)]['food_qty'].unique().tolist()
+
+            if food_types:
+                print(food_types[0], "|", p_date, meal)
+                template[meal].append({'time': str(timestamp[0].strftime('%H:%M')), 'category': 'skip', 'date': i })
+            else:
+                template[meal].append({'time': '00:00', 'category': 'skip', 'date': i})
+
+    return template , dates

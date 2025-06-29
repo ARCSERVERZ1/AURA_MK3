@@ -403,6 +403,10 @@ function renderRawDataTable(rawData) {
       const response = await callApiSecurely(apiUrl, payload);
       defaultMealData = response.meal_data;
       defaultLabels = response.labels;
+      document.getElementById("filterName").value = response.user;
+      document.getElementById('startTime').value = response.start_date;
+      document.getElementById('endTime').value = response.end_date;
+      console.log(response);
       drawChart(); // Draw chart after data is fetched
        renderRawDataTable(response.raw_data);
     } catch (error) {
