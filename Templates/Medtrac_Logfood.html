@@ -34,25 +34,32 @@
 
 <!-- Filter Bar + Chart -->
 <div class="container mt-4">
-  <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
-    <h5 class="mb-0">Meal Timing Chart</h5>
-    <select class="form-select" id="filterName">
-         <option selected>Filter by Name</option>
-        {% for i in users %}
-        <option>{{i}}</option>
-        {% endfor %}
-    </select>
+  <!-- Line 1: Meal Chart + User dropdown -->
+<div class="d-flex align-items-center gap-2 mb-2" style="font-size: 13px;">
+  <h6 class="mb-0" style="white-space: nowrap;">Meal Chart</h6>
+  <select class="form-select form-select-sm" id="filterName" style="max-width: 120px;">
+    <option selected>Name</option>
+    {% for i in users %}
+    <option>{{ i }}</option>
+    {% endfor %}
+  </select>
+</div>
 
-    <label for="startTime" class="form-label mb-0 ms-3">Start Time:</label>
-    <input type="date" class="form-control" id="startTime">
-    <label for="endTime" class="form-label mb-0 ms-3">End Time:</label>
-    <input type="date" class="form-control" id="endTime">
-    <button class="btn btn-primary ms-3" onclick="filteredGraph()">Apply Filter</button>
-  </div>
+<!-- Line 2: Start Date + End Date + Button -->
+<div class="d-flex flex-nowrap align-items-center gap-2" style="font-size: 12px; overflow-x: auto;">
+  <label for="startTime" class="form-label mb-0" style="white-space: nowrap;">Start:</label>
+  <input type="date" class="form-control form-control-sm" id="startTime" style="max-width: 120px;">
+
+  <label for="endTime" class="form-label mb-0" style="white-space: nowrap;">End:</label>
+  <input type="date" class="form-control form-control-sm" id="endTime" style="max-width: 120px;">
+
+  <button class="btn btn-sm btn-primary" onclick="filteredGraph()">Filter</button>
+</div>
+
 
   <div class="card shadow-sm border-0">
     <div class="card-body">
-      <canvas id="mealChart"></canvas>
+      <canvas id="mealChart" style="height: 600px;"></canvas>
     </div>
   </div>
 </div>
@@ -146,6 +153,63 @@
     </div>
   </div>
 </div>
+
+<!-- Modal with Form -->
+<div class="modal fade" id="entryFormModal" tabindex="-1" aria-labelledby="entryFormModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form id="editEntryForm" onsubmit="submitEditForm(event)">
+        <div class="modal-header">
+          <h5 class="modal-title" id="entryFormModalLabel">Edit Meal Entry</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id" id="entryId">
+          <div class="mb-3">
+            <label class="form-label">Timestamp</label>
+            <input type="datetime-local" class="form-control" name="time_stamp" id="entryTimestamp" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Food Type</label>
+            <select class="form-select" name="food_type" id="entryFoodType" required>
+              <option value="" disabled selected>Select</option>
+              <option>Veg</option>
+              <option>Non-Veg</option>
+              <option>Egg</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="food_description" id="entryDescription" rows="4" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Quantity</label>
+            <select class="form-select" name="food_qty" id="entryQuantity" required>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
 <div id="tableContainer" class="mt-4"></div>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -197,15 +261,17 @@
   function saveDataAsJSON(data) {
     const json = JSON.stringify(data, null, 2);
     const apiUrl = "/medtrac/log_food_data";
+    const confirmed = confirm("Are you sure you want to submit?");
+    if (!confirmed) return;
     callApiSecurely(apiUrl , json );
-    console.log("Saved JSON:", json);
-    alert("Data saved in JSON format. Check console.");
+
   }
 
   document.getElementById('saveAndAdd').addEventListener('click', () => {
     const form = document.getElementById('multiMealForm');
     if (form.checkValidity()) {
       const data = collectFormData(form);
+
       saveDataAsJSON(data);
     } else {
       form.reportValidity();
@@ -263,63 +329,74 @@
   }
 
   function drawChart(start = '04:00', end = '24:00') {
-    const startHour = toHours(start);
-    const endHour = toHours(end);
+  const startHour = toHours(start);
+  const endHour = toHours(end);
 
-    const datasets = Object.entries(defaultMealData).map(([meal, data]) =>
-      buildMealDataset(meal, data, startHour, endHour)
-    );
+  const datasets = Object.entries(defaultMealData)
+    .map(([meal, data]) => buildMealDataset(meal, data, startHour, endHour))
+    .filter(dataset => dataset.data.length); // skip empty
 
-    if (chart) chart.destroy();
+  const isSingleMeal = datasets.length === 1;
 
-    chart = new Chart(document.getElementById('mealChart'), {
-      type: 'line',
-      data: {
-        labels: defaultLabels,
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: {
-            callbacks: {
-              label: function (context) {
-                const value = context.raw;
-                if (value == null) return null;
-                const h = Math.floor(value);
-                const m = Math.round((value - h) * 60);
-                return `${context.dataset.label}: ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-              }
-            }
+  if (chart) chart.destroy();
+
+  chart = new Chart(document.getElementById('mealChart'), {
+    type: 'line',
+    data: {
+      labels: defaultLabels,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxWidth: 10,
+            font: { size: 10 },
+            padding: 8
           }
         },
-        scales: {
-          x: {
-            title: { display: true, text: 'Date' }
-          },
-          y: {
-            title: { display: true, text: 'Time of Meal (HH:MM)' },
-            min: 6,
-            max: 24,
-            ticks: {
-              callback: value => {
-                const h = Math.floor(value);
-                const m = Math.round((value - h) * 60);
-                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-              }
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              const value = context.raw;
+              if (value == null) return null;
+              const h = Math.floor(value);
+              const m = Math.round((value - h) * 60);
+              return `${context.dataset.label}: ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Date' }
+        },
+        y: {
+          title: { display: true, text: 'Time of Meal (HH:MM)' },
+          min: 4, // Adjusted to match 'start'
+          max: 24,
+          ticks: {
+            stepSize: isSingleMeal ? 0.25 : 1, // 0.25 = 15-minute intervals
+            callback: value => {
+              const h = Math.floor(value);
+              const m = Math.round((value - h) * 60);
+              return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
             }
           }
         }
       }
-    });
-  }
+    }
+  });
+}
+
 // table start
 
 function renderRawDataTable(rawData) {
   let lastDate = null;
   let colorToggle = false;
-
   const tableId = "rawDataTable";
 
   const tableHTML = `
@@ -332,7 +409,7 @@ function renderRawDataTable(rawData) {
             <th>Food Type</th>
             <th>Description</th>
             <th>Quantity</th>
-            <th>Edit</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -343,10 +420,12 @@ function renderRawDataTable(rawData) {
               colorToggle = !colorToggle;
               lastDate = dateStr;
             }
+
             const rowClass = colorToggle ? 'table-light' : 'table-secondary';
+
             return `
               <tr class="${rowClass}">
-               <td>${new Date(entry.time_stamp).toLocaleString('en-US', {
+                <td>${new Date(entry.time_stamp).toLocaleString('en-US', {
                   year: 'numeric', month: '2-digit', day: '2-digit',
                   hour: '2-digit', minute: '2-digit',
                   timeZone: 'UTC'
@@ -355,7 +434,10 @@ function renderRawDataTable(rawData) {
                 <td>${entry.food_type}</td>
                 <td>${entry.food_description}</td>
                 <td>${entry.food_qty}</td>
-                <td><button class="btn btn-sm btn-primary" onclick="editEntry(${entry.id})">Edit</button></td>
+                <td>
+                  <button class="btn btn-sm btn-info" onclick='edit_form(${JSON.stringify(entry)})'>Action</button>
+                  <button class="btn btn-sm btn-danger" onclick='delete_form(${entry.id})'>Delete</button>
+                </td>
               </tr>
             `;
           }).join('')}
@@ -366,19 +448,74 @@ function renderRawDataTable(rawData) {
 
   document.getElementById('tableContainer').innerHTML = tableHTML;
 
-  // Initialize DataTable after rendering
   setTimeout(() => {
     $(`#${tableId}`).DataTable({
-      order: [[0, 'desc']], // sort by timestamp descending
+      order: [[0, 'desc']],
       pageLength: 10,
     });
   }, 100);
 }
+async function delete_form(id) {
+  const confirmed = confirm("Are you sure you want to delete this entry?");
+  if (!confirmed) return;
+
+  try {
+    const apiUrl = "/medtrac/delete_foodlog";
+    const response = await callApiSecurely(apiUrl, { id: id });
+
+    if (response.success || response.status === 'Success') {
+      alert("Deleted Successfully ");
+      location.reload();
+    }
+    else{
+    alert("Something went wrong ????");
+    }
+
+  } catch (error) {
+    alert("Error occurred: " + error.message);
+    console.error(error);
+  }
+}
+
+function edit_form(entry) {
+
+ document.getElementById('entryId').value = entry.id;
+  document.getElementById('entryTimestamp').value = new Date(entry.time_stamp).toISOString().slice(0, 16);
+  document.getElementById('entryFoodType').value = entry.food_type;
+  document.getElementById('entryDescription').value = entry.food_description;
+  document.getElementById('entryQuantity').value = entry.food_qty;
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('entryFormModal'));
+  modal.show();
+
+}
+
+async function submitEditForm(event) {
+  event.preventDefault();
+
+  const form = document.getElementById('editEntryForm');
+  if (!form.checkValidity()) {
+    form.reportValidity(); // Show browser validation messages
+    return;
+  }
+
+  const formData = new FormData(form);
+  const payload = Object.fromEntries(formData.entries());
+
+   const apiUrl = "/medtrac/edit_foodlog";
+   const response = await callApiSecurely(apiUrl, payload);
+
+    if (response.success || response.status === 'Success') {
+      alert("Edit Successfully ");
+      location.reload();
+    }
+    else{
+    alert("Something went wrong ????");
+    }
 
 
 
-
-
+}
 
 
 // table end
