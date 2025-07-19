@@ -1,4 +1,3 @@
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
@@ -6,6 +5,7 @@ from DEM import views as dem_views
 from DOCMA import views as docma_views
 import os
 from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth.decorators import login_required
 
 def diagnostics():
     print(os.getcwd())
@@ -18,13 +18,12 @@ def diagnostics():
 
     # Print folder properties
     print("Folder Name:", folder_name)
-    print("Folder Size (in bytes):", folder_size/ (1024 ** 2))
+    print("Folder Size (in bytes):", folder_size / (1024 ** 2))
     print("Creation Time:", creation_time)
     print("Modification Time:", modification_time)
 
 
 def login(request):
-
     superusers = User.objects.filter(is_superuser=True)
     for user in superusers:
         if user == 'Admin':
@@ -53,8 +52,8 @@ def login(request):
 
     return render(request, 'Login.html')
 
+@login_required()
 def home_page(request):
-
     # diagnostics()
     menu_bar = docma_views.home_menu_req()
 
@@ -63,18 +62,21 @@ def home_page(request):
     # print(user.username , "--------use------------")
     # print(user.email , "--------em------------")
 
-
-
     context = {
-        'menu_bar' : menu_bar
+        'menu_bar': menu_bar,
+        'user': request.user.username
 
     }
-    # for i in menu_bar:
-    #     print(i.app_name)
-    return render(request, "home.html" , context)
+
+    return render(request, "home.html", context)
 
 
-
-
-
-
+def get_users(requests):
+    lastname = requests.user.last_name
+    users = User.objects.all()
+    user_list = [str(requests.user.first_name)]
+    for user in users:
+        if str(user.last_name).strip().lower() == str(
+                lastname).strip().lower() and requests.user.first_name != user.first_name:
+            user_list.append(user.first_name)
+    return user_list

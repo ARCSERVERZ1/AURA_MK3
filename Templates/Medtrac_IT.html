@@ -15,7 +15,7 @@
     <a class="navbar-brand" style="font-size: 2rem;">Medtrac /</a>
     <div class="ms-auto d-flex align-items-center gap-5">
       <!-- Dropdown -->
-      <select id="navDropdown" class="form-select" style="font-size: 2rem; width: 200px; height:70px;">
+      <select id="navDropdown" class="form-select" style="font-size: 2rem; width: 200px; height:70px;" >
         {% for name in users %}
           <option value="{{ name }}">{{ name }}</option>
         {% endfor %}
@@ -41,6 +41,7 @@
             <label class="form-label" style="font-size: 2.5rem;">Person *</label>
             <select id="Person" name="Person" class="form-select" style="font-size: 2rem; height: 100px; border: 2px solid #343a40;" required>
               {% for name in users %}
+
                 <option value="{{ name }}">{{ name }}</option>
               {% endfor %}
             </select>
@@ -107,6 +108,7 @@
   <div id="recordCarousel" class="carousel slide mt-5" data-bs-ride="carousel" data-bs-interval="false">
     <div class="carousel-inner">
       {% for user, records in all_records.items %}
+
         {% for record in records %}
           <div class="carousel-item {% if forloop.first and forloop.parentloop.first %}active{% endif %}">
             <div class="d-flex justify-content-center">
@@ -206,6 +208,17 @@
 </body>
 </html>
 <script>
+
+
+function goToURL(selectElement) {
+    console.log(selectElement.value);
+    console.log("healthrecords/"+selectElement.value);
+    window.location.href = 'healthrecords/'+selectElement.value;
+
+}
+
+
+
 let is_edit = '' ;
 
 var carousel = new bootstrap.Carousel('#recordCarousel', {
@@ -327,12 +340,13 @@ function editRecord(id) {
   healthCard.style.display = 'block';
 
 
-  const apiUrl = "get_data_by_id";
+  const apiUrl = "sget_data_by_id";
   const dataToSend = { id: id };
   callApiSecurely(apiUrl, dataToSend)
   .then(function(result) {
-
+  console.log(result);
    const record = result.Result[0];
+
       document.getElementById("id").value  = record.id;
       document.getElementById("Person").value = record.user;
       document.getElementById("Discomfort").value = record.discomfort;

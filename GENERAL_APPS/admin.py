@@ -4,3 +4,4 @@ from .models import *
 
 
 admin.register(locations_data)(admin.ModelAdmin)
+admin.register(checklist)(admin.ModelAdmin)

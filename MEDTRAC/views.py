@@ -26,8 +26,10 @@ def get_users(requests):
     return user_list
 
 
+
+
 def medtrac_dashboard(requests):
-    card_data = list(HealthIncidentLogs.objects.values())
+    card_data = list(HealthIncidentLogs.objects.values().order_by('-time_stamp'))
     all_records = {}
     discomfort = list(config_discomfort.objects.values())
     for record in card_data:
@@ -35,13 +37,11 @@ def medtrac_dashboard(requests):
             all_records[record['user']].append(record)
         else:
             all_records[record['user']] = [record]
-
     res = {
         'users': get_users(requests),
         'discomforts': discomfort,
         'all_records': all_records
     }
-
     return render(requests, 'Medtrac_IT.html', context=res)
 
 
@@ -326,7 +326,7 @@ def delete_foodlog(requests):
 @api_view(['POST'])
 def edit_foodlog(requests):
     try:
-        print("request Edit" , requests.data)
+        print("request Edit", requests.data)
         data = requests.data
         record_data = MealDataLog.objects.filter(id=requests.data['id'])
         record_data.update(

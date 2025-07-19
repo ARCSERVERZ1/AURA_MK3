@@ -7,6 +7,10 @@ urlpatterns = [
     path('location/delete_by_id/',views.delete_by_id),
     path('test/',views.test_run),
     path('home_query/',views.home_query),
+    path('checklist/',views.checklist_dashboard),
+    path('checklist_data',views.checklist_dashboard_data),
+    path('checkpoint_data',views.checkpoint_data),
+    path('edited_check_point',views.edited_check_point),
 
 
 ]

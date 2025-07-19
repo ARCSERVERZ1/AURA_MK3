@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+
+
 # Create your models here.
 
 
@@ -8,8 +10,8 @@ class locations_data(models.Model):
     location_name = models.CharField(max_length=255, null=False)
     latitude = models.CharField(max_length=255, null=False)
     longitude = models.CharField(max_length=255, null=False)
-    remarks = models.CharField(max_length=255, null = True)
-    group = models.CharField(max_length=255, null = True)
+    remarks = models.CharField(max_length=255, null=True)
+    group = models.CharField(max_length=255, null=True)
     temp_location = models.CharField(max_length=255, default='False')
     Active = models.CharField(max_length=255, default='True')
     user_permission = models.CharField(max_length=255, default='all')
@@ -20,15 +22,13 @@ class locations_data(models.Model):
         return f"{self.location_name} | {self.temp_location}"
 
 
-'''
-Fresh red: #A41F13
+class checklist(models.Model):
+    id = models.AutoField(primary_key=True)
+    list_name = models.CharField(max_length=255, null=False)
+    status  = models.CharField(max_length=255 , default = '1')
+    item = models.CharField(max_length=255, null=False)
+    time_stamp = models.DateTimeField(default=timezone.now)
+    user = models.CharField(max_length=255, default='')
 
-White fog: #FAF5F1
-
-Light gray: #E0DBD8
-
-Carbon gray: #292F36
-
-Soft Brown: #8F7A6E
-
-'''
+    def __str__(self):
+        return f"{self.list_name} | {self.item}"
