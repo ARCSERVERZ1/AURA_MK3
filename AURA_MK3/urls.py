@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path , include
 from AURA_MK3 import views as v
+from rest_framework_simplejwt.views import TokenObtainPairView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('dem/' , include('DEM.urls')),
@@ -27,6 +28,8 @@ urlpatterns = [
     path('homeautom/' , include('HOMEAUTOM.urls') ),
     # path('aigic/' , include('AIGIC.urls') ),
     path('general/' , include('GENERAL_APPS.urls') ),
+    path('api/rag_data/', v.rag_data),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
 
 
 ]

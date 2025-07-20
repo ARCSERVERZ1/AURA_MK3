@@ -41,6 +41,7 @@ class MealDataLog(models.Model):
         ('Non-Veg', 'Non-Vegetarian'),
         ('Egg', 'Egg'),
         ('other', 'Other'),
+        ('Tiffin', 'Tiffin'),
     ]
 
     FOOD_CATEGORY_CHOICES = [

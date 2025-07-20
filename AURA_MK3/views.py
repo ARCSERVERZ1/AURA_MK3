@@ -5,7 +5,15 @@ from DEM import views as dem_views
 from DOCMA import views as docma_views
 import os
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework import permissions
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from datetime import datetime
+from DEM import models as dem_models
+from DOCMA import models as docma_models
+from GENERAL_APPS import models as gen_models
+from MEDTRAC import models as medtrac_models
+
 
 def diagnostics():
     print(os.getcwd())
@@ -52,6 +60,7 @@ def login(request):
 
     return render(request, 'Login.html')
 
+
 @login_required()
 def home_page(request):
     # diagnostics()
@@ -80,3 +89,61 @@ def get_users(requests):
                 lastname).strip().lower() and requests.user.first_name != user.first_name:
             user_list.append(user.first_name)
     return user_list
+
+
+@api_view(['POST'])
+# @permission_classes([permissions.IsAuthenticated])
+def rag_data(requests):
+    def validate_json_date_range(data):
+        try:
+            start = datetime.strptime(data['start_date'], '%Y-%m-%d')
+            end = datetime.strptime(data['end_date'], '%Y-%m-%d')
+            start_of_day = datetime.combine(start.date(), datetime.min.time())  # 00:00:00
+            end_of_day = datetime.combine(end.date(), datetime.max.time())  # 23:59:59.999999
+
+            dates = {
+                "start_date": str(start),
+                "end_date": str(end),
+                "start_timestamp": str(start_of_day),
+                "end_timestamp": str(end_of_day)
+            }
+
+            if end <= start:
+                return [False, "Error: 'end_date' must be after 'start_date'."]
+            delta_days = (end - start).days
+            if delta_days > 50:
+                return [False, f"Error: Date range is {delta_days} days, which exceeds the 50-day limit."]
+            return [True, dates]
+        except ValueError:
+            return [False, "Error: Date format must be 'YYYY-MM-DD'."]
+
+    res = validate_json_date_range(requests.data)
+
+    rag_dict = {param: [] for param in requests.data['rag_parameters']}
+
+
+
+    if res[0]:
+        print(res)
+        if "DEM" in requests.data["rag_parameters"]:
+            in_json = list(dem_models.transactions_data.objects.filter(
+                date__range=[requests.data['start_date'], requests.data['end_date']]).values())
+            rag_dict['DEM'] = in_json
+        if "FoodLog" in requests.data["rag_parameters"]:
+            in_json = list(medtrac_models.MealDataLog.objects.filter(
+                date__range=[requests.data['start_date'], requests.data['end_date']]).values())
+            rag_dict['FoodLog'] = in_json
+        if "MedicalIncidentRecord" in requests.data["rag_parameters"]:
+            in_json = list(medtrac_models.HealthIncidentLogs.objects.filter(
+                time_stamp__range=[res[1]['start_timestamp'], res[1]['end_timestamp']]).values())
+            rag_dict['MedicalIncidentRecord'] = in_json
+        if "Docma" in requests.data["rag_parameters"]:
+            in_json = data = list(docma_models.docma_firebase.objects.values())
+            rag_dict['Docma'] = in_json
+        if "Checklist" in requests.data["rag_parameters"]:
+            in_json = data = list(gen_models.checklist.objects.values())
+            rag_dict['checklist'] = in_json
+        if "Location" in requests.data["rag_parameters"]:
+            in_json = data = list(gen_models.locations_data.objects.values())
+            rag_dict['Location'] = in_json
+    return JsonResponse({'Rag': rag_dict}, safe=False)
